@@ -241,7 +241,7 @@ def validate_input():
         # set the widths to automatically be 1/2 (i.e. assumes frequency-weighted coordinates.
         # Any user set widths will override the default
         if len(glbl.nuclear_basis['widths']) >= n_usr_freq:
-            pass
+            glbl.nuclear_basis['widths'] = [0.5*glbl.nuclear_basis['widths'][i] for i in range(n_usr_freq)]
         else:
             glbl.nuclear_basis['widths'] = [0.5 for i in range(n_usr_freq)]
 

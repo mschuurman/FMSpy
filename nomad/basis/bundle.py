@@ -314,8 +314,11 @@ class Bundle:
         """Returns the classical kinetic energy of the bundle."""
         nalive   = len(self.alive)
         kecoef   = glbl.pes.kecoeff
+        print("p="+str(self.traj[self.alive[0]].p()))
+        print("kecoef="+str(kecoef))
         ke_vec   = np.array([np.dot(self.traj[self.alive[i]].p()**2, kecoef)
                            for i in range(nalive)])
+        print("t="+str(sum(ke_vec)))
         return sum(ke_vec)/nalive
 
     @timings.timed
@@ -452,36 +455,46 @@ class Bundle:
 
         np.set_printoptions(precision=8, linewidth=80, suppress=False)
 
-#        filename='/tmp/schuurm/nomad/elec_overlap.dat'
-#        smat = np.array([[glbl.integrals.elec_overlap(self.traj[j],self.traj[i]) for i in range(self.nalive)] for j in range(self.nalive)])
-#        with open(filename, 'a') as outfile:
-#            outfile.write('{:9.2f}\n'.format(self.time))
-#            outfile.write(np.array2string(smat,
-#                      formatter={'complex_kind':lambda x: '{: 15.8e}'.format(x)})+'\n')
+        filename='/tmp/schuurm/nomad/elec_overlap.dat'
+        smat = np.array([[glbl.integrals.elec_overlap(self.traj[j],self.traj[i]) for i in range(self.nalive)] for j in range(self.nalive)])
+        with open(filename, 'a') as outfile:
+            outfile.write('{:9.2f}\n'.format(self.time))
+            outfile.write(np.array2string(smat,
+                      formatter={'complex_kind':lambda x: '{: 15.8e}'.format(x)})+'\n')
 
-#        filename='/tmp/schuurm/nomad/sig.dat'
-#        smat = np.array([[glbl.integrals.sdot_integral(self.traj[j],self.traj[i],e_only=True) for i in range(self.nalive)] for j in range(self.nalive)])
-#        with open(filename, 'a') as outfile:
-#            outfile.write('{:9.2f}\n'.format(self.time))
-#            outfile.write(np.array2string(smat,
-#                      formatter={'complex_kind':lambda x: '{: 15.8e}'.format(x)})+'\n')
+        filename='/tmp/schuurm/nomad/sig.dat'
+        smat = np.array([[glbl.integrals.sdot_integral(self.traj[j],self.traj[i],e_only=True) for i in range(self.nalive)] for j in range(self.nalive)])
+        with open(filename, 'a') as outfile:
+            outfile.write('{:9.2f}\n'.format(self.time))
+            outfile.write(np.array2string(smat,
+                      formatter={'complex_kind':lambda x: '{: 15.8e}'.format(x)})+'\n')
 
-#        filename='/tmp/schuurm/nomad/tau.dat'
-#        smat = np.array([[glbl.integrals.sdot_integral(self.traj[j],self.traj[i],nuc_only=True) for i in range(self.nalive)] for j in range(self.nalive)])
-#        with open(filename, 'a') as outfile:
-#            outfile.write('{:9.2f}\n'.format(self.time))
-#            outfile.write(np.array2string(smat,
-#                      formatter={'complex_kind':lambda x: '{: 15.8e}'.format(x)})+'\n')
+        filename='/tmp/schuurm/nomad/tau.dat'
+        smat = np.array([[glbl.integrals.sdot_integral(self.traj[j],self.traj[i],nuc_only=True) for i in range(self.nalive)] for j in range(self.nalive)])
+        with open(filename, 'a') as outfile:
+            outfile.write('{:9.2f}\n'.format(self.time))
+            outfile.write(np.array2string(smat,
+                      formatter={'complex_kind':lambda x: '{: 15.8e}'.format(x)})+'\n')
 
-#        filename='/tmp/schuurm/nomad/theta.dat'
-#        theta = np.array([glbl.integrals.theta(self.traj[i]) for i in range(self.nalive)])
+        filename='/tmp/schuurm/nomad/theta.dat'
+        theta = np.array([glbl.integrals.theta(self.traj[i]) for i in range(self.nalive)])
 #        with open(filename, 'a') as outfile:
 #            outfile.write('{:9.4f}{:15.8f}{:15.8f}{:15.8f}{:15.8f}\n'.format(self.time,theta[0],theta[1],theta[2],theta[3]))
+#            outfile.write('{:9.4f}{:15.8f}{:15.8f}{:15.8f}{:15.8f}\n'.format(self.time,theta[0]))
 
-#        filename='/tmp/schuurm/nomad/theta_cache.dat'
-#        theta = np.array([glbl.integrals.theta_cache[self.traj[i].label] for i in range(self.nalive)])
+        filename='/tmp/schuurm/nomad/theta_cache.dat'
+        theta = np.array([glbl.integrals.theta_cache[self.traj[i].label] for i in range(self.nalive)])
 #        with open(filename, 'a') as outfile:
 #            outfile.write('{:9.4f}{:15.8f}{:15.8f}{:15.8f}{:15.8f}\n'.format(self.time,theta[0],theta[1],theta[2],theta[3]))
+#            outfile.write('{:9.4f}{:15.8f}{:15.8f}{:15.8f}{:15.8f}\n'.format(self.time,theta[0]))
+
+        filename='/tmp/schuurm/nomad/Hd.dat'
+        hdmat = self.traj[0].pes_data.diabat_pot
+        with open(filename, 'a') as outfile:
+            outfile.write('{:9.2f}\n'.format(self.time))
+            outfile.write(np.array2string(hdmat,
+                      formatter={'real_kind':lambda x: '{: 15.8e}'.format(x)})+'\n')
+        
 
         for i in range(self.n_traj()):
             if not self.traj[i].active:
@@ -520,19 +533,18 @@ class Bundle:
                 fileio.print_traj_row(self.traj[i].label, 2, data)
 
                 # temporary writing of integral debugging
-#                filename='/tmp/schuurm/nomad/theta.'+str(self.traj[i].label)
-#                with open(filename, 'a') as outfile:
-#                    outfile.write('\n'+str(self.time)+'  '+str(self.integrals.theta(self.traj[i])))
-#                filename='/tmp/schuurm/nomad/hessian.'+str(self.traj[i].label)
-#                print("hesses="+str(self.traj[i].pes_data.diabat_deriv2))
-#                hess=self.traj[i].pes_data.diabat_deriv2[:,:,self.traj[i].state, self.traj[i].state]
-#                dderiv=self.traj[i].pes_data.diabat_deriv2[0,1]
-#                with open(filename, 'a') as outfile:
-#                    outfile.write('{:9.2f}\n'.format(self.time))
-#                    outfile.write(np.array2string(hess,
-#                      formatter={'complex_kind':lambda x: '{: 15.8e}'.format(x)})+'\n')
-#                    outfile.write(np.array2string(dderiv,
-#                      formatter={'complex_kind':lambda x: '{: 15.8e}'.format(x)})+'\n')
+                filename='/tmp/schuurm/nomad/theta.'+str(self.traj[i].label)
+                with open(filename, 'a') as outfile:
+                    outfile.write('\n'+str(self.time)+'  '+str(glbl.integrals.theta(self.traj[i])))
+                filename='/tmp/schuurm/nomad/hessian.'+str(self.traj[i].label)
+                hess=self.traj[i].pes_data.diabat_deriv2[:,:,self.traj[i].state, self.traj[i].state]
+                dderiv=self.traj[i].pes_data.diabat_deriv2[0,1]
+                with open(filename, 'a') as outfile:
+                    outfile.write('{:9.2f}\n'.format(self.time))
+                    outfile.write(np.array2string(hess,
+                      formatter={'complex_kind':lambda x: '{: 15.8e}'.format(x)})+'\n')
+                    outfile.write(np.array2string(dderiv,
+                      formatter={'complex_kind':lambda x: '{: 15.8e}'.format(x)})+'\n')
 
             # print pes information relevant to the chosen interface
             if glbl.printing['print_es']:

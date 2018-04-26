@@ -233,7 +233,8 @@ def init_interface():
     # KE operator coefficients, mass- and frequency-scaled normal mode
     # coordinates, a_i = 0.5*omega_i
     kecoeff = np.zeros(ham.nmode_total)
-    kecoeff[ham.mrange] = 0.5*ham.freq
+    kecoeff[ham.mrange] = 0.5
+    print('kecoeff='+str(kecoeff))
 
     # Ouput some information about the Hamiltonian
     fileio.print_fms_logfile('string', ['*'*72])
@@ -527,24 +528,33 @@ def calc_diabderiv2(q):
         #now do bilinear terms
         elem = [ind for ind,val in enumerate(o) if val > 0]
         nelem = len(elem)
-        if nelem > 1:
-            nterm = nelem * (nelem-1) / 2
-            prim = np.repeat(q[m]**o, nelem).reshape(len(m), nterm)
-            derv = o[elem]*q[elem]**(o[elem]-1)
-            icnt = 0
-            for j in range(nelem):
-                for k in range(i):
-                    prim[icnt,elem[j]] = derv[j]
-                    prim[icnt,elem[k]] = derv[k]
-                    trm = ham.coe[i] * np.prod(prim[icnt])
-                    diabderiv2[m[elem[j]],m[elem[k]],s1,s2] += trm
-                    if elem[j] != elem[k]:
-                        diabderiv2[m[elem[k]],m[elem[j]],s1,s2] += trm
-                    if s1 != s2:
-                        diabderiv2[m[elem[j]],m[elem[k]],s2,s1] += trm
-                        if elem[j] != elem[k]:
-                            diabderiv2[m[elem[k]],m[elem[j]],s2,s1] += trm
-                    icnt+=1
+#        print("s1,s2="+str(s1)+' '+str(s2))
+#        print("o="+str(o))
+#        print("m="+str(m))
+#        print("len(m)="+str(len(m)))
+#        print("q[m]="+str(q[m]))
+#        print("q[m]**o="+str(q[m]**o))
+#        print("nelem="+str(nelem))
+#        print("nterm="+str(nterm))
+#        if nelem > 1:
+#            nterm = int(nelem * (nelem-1) / 2)
+#            print("nterm="+str(nterm))
+#            prim = np.repeat(q[m]**o, nterm).reshape(len(m), nterm)
+#            derv = o[elem]*q[elem]**(o[elem]-1)
+#            icnt = 0
+#            for j in range(nelem):
+#                for k in range(j):
+#                    prim[icnt,elem[j]] = derv[j]
+#                    prim[icnt,elem[k]] = derv[k]
+#                    trm = ham.coe[i] * np.prod(prim[icnt])
+#                    diabderiv2[m[elem[j]],m[elem[k]],s1,s2] += trm
+#                    if elem[j] != elem[k]:
+#                        diabderiv2[m[elem[k]],m[elem[j]],s1,s2] += trm
+#                    if s1 != s2:
+#                        diabderiv2[m[elem[j]],m[elem[k]],s2,s1] += trm
+#                        if elem[j] != elem[k]:
+#                            diabderiv2[m[elem[k]],m[elem[j]],s2,s1] += trm
+#                    icnt+=1
 
     return diabderiv2
 
@@ -629,10 +639,11 @@ def calc_diablap(q):
         elif nmodes > 1:
             m = ham.mode[i]
             o = np.array(ham.order[i])
-            q2col = np.repeat(q[m]**2, nmodes).reshape(nmodes, nmodes)
-            fac = np.prod((q2col - np.diag(q[m]**2) + np.diag(o * (o - 1))) *
+            if np.amax(o) > 1:
+                q2col = np.repeat(q[m]**2, nmodes).reshape(nmodes, nmodes)
+                fac = np.prod((q2col - np.diag(q[m]**2) + np.diag(o * (o - 1))) *
                           (q[m]**(o - 2))[:,np.newaxis], axis=0)
-            diablap[s1,s2] += ham.coe[i] * np.sum(fac)
+                diablap[s1,s2] += ham.coe[i] * np.sum(fac)
 
     # Fill in the upper-triangle
     diablap += diablap.T - np.diag(diablap.diagonal())
