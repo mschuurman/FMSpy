@@ -314,11 +314,8 @@ class Bundle:
         """Returns the classical kinetic energy of the bundle."""
         nalive   = len(self.alive)
         kecoef   = glbl.pes.kecoeff
-        print("p="+str(self.traj[self.alive[0]].p()))
-        print("kecoef="+str(kecoef))
         ke_vec   = np.array([np.dot(self.traj[self.alive[i]].p()**2, kecoef)
                            for i in range(nalive)])
-        print("t="+str(sum(ke_vec)))
         return sum(ke_vec)/nalive
 
     @timings.timed
