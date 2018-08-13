@@ -91,7 +91,7 @@ def process_arguments(args):
     chkpt_file = args[1]
 
     if not os.path.isfile(chkpt_file):
-        exit_error('input file: '+str(ckhpt_file)+' not found')
+        raise ValueError('input file: '+str(ckhpt_file)+' not found')
 
     iarg = 2
     while iarg < len(args):

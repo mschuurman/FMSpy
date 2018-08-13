@@ -1,3 +1,9 @@
+!
+!
+! Evaluates integrals of arbitary moments of Gaussian basis functions
+!
+!
+
   !
   ! Returns the matrix element <cmplx_gaus(q,p)| q^N |cmplx_gaus(q,p)>
   !   -- up to an overlap integral --

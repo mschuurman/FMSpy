@@ -1,2 +1,2 @@
 include README.rst
-recursive-include nomad *.pyx
+recursive-include nomad *.f90

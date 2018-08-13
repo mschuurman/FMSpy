@@ -11,14 +11,8 @@ class Integral:
         self.type     = ansatz
         self.centroid = []
         self.centroid_required = []
-        try:
-            self.ints =__import__('nomad.integrals.gaussian_global', fromlist=['a'])
-        except ImportError:
-            print('Cannot import integrals: nomad.integrals.gaussian_global')
-        try:
-            self.ints_eval = __import__('nomad.integrals.'+str(self.type),fromlist=['a'])
-        except ImportError:
-            print('Cannot import integrals: nomad.integrals.'+str(self.type))
+        self.ints = __import__('nomad.integrals.gaussian_global', fromlist=['a'])
+        self.ints_eval = __import__('nomad.integrals.'+str(self.type),fromlist=['a'])
 
         self.hermitian            = self.ints.hermitian
         self.require_centroids    = self.ints_eval.require_centroids

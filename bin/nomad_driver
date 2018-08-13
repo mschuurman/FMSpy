@@ -5,7 +5,6 @@ The main nomad driver.
 import os
 import sys
 import numpy as np
-import mpi4py.MPI as MPI
 import nomad.core.glbl as glbl
 import nomad.core.files as files
 import nomad.core.log as log
@@ -22,14 +21,12 @@ def init():
     This must be separate from main so that an error which occurs
     before the input file is created will be written to stdout.
     """
-    # initialize MPI communicator
     if glbl.mpi['parallel']:
+        # initialize MPI communicator
+        import mpi4py.MPI as MPI
         glbl.mpi['comm']  = MPI.COMM_WORLD
         glbl.mpi['rank']  = glbl.mpi['comm'].Get_rank()
         glbl.mpi['nproc'] = glbl.mpi['comm'].Get_size()
-    else:
-        glbl.mpi['rank']  = 0
-        glbl.mpi['nproc'] = 1
 
     # start the global timer
     timings.start('global')

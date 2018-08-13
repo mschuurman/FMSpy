@@ -1,5 +1,11 @@
+!
+!
+! Evaluates integrals over operators of Gaussian basis functions
+!
+!
+
   !
-  !
+  ! Returns the overlap of two Gaussian basis functions
   !
   subroutine overlap(g1, a1, x1, p1, g2, a2, x2, p2, S)
     implicit none
@@ -23,7 +29,7 @@
   end subroutine overlap
 
   !
-  !
+  ! Returns the del/dp integral between two Gaussian basis functions
   !
   subroutine deldp(S, a1, x1, p1, a2, x2, p2, delp)
     implicit none
@@ -42,7 +48,7 @@
   end subroutine deldp
 
   !
-  !
+  ! Returns the del/dx integral between two Gaussian basis functions
   !
   subroutine deldx(S, a1, x1, p1, a2, x2, p2, delx)
     implicit none
@@ -61,8 +67,7 @@
   end subroutine deldx
 
   !
-  ! Returns the del^2/d^2x matrix element between the nuclear component
-  ! of two trajectories for each componet of 'x' (does not sum over terms)
+  ! Returns the del^2/d^2x integral between two Gaussian basis functions
   !
   subroutine deld2x(S, a1, x1, p1, a2, x2, p2, del2x)
     implicit none

@@ -1,11 +1,12 @@
 !
 !
-! Evaluates integrals of operators over dirac test functions
+! Evaluates integrals of operators over Dirac test functions
 !
 !
 
   !
-  !
+  ! Returns the overlap of a Dirac delta function and a primitive
+  ! Gaussian function
   !
   subroutine overlap(x1, g2, a2, x2, p2, S)
     implicit none
@@ -23,13 +24,14 @@
     prefactor = (2. * a2 / pi)**(0.25)
     real_part = a2 * dx**2 
     imag_part = p2 * dx
-    S = exp(I * g2 ) * product(prefactor) * exp(sum(-real_part + I*imag_part))
+    S = exp(I * g2) * product(prefactor) * exp(sum(-real_part + I*imag_part))
 
     return
   end subroutine overlap
 
   !
-  !
+  ! Returns the del/dp integral of a Dirac delta function and a primitive
+  ! Gaussian function
   !
   subroutine deldp(S, x1, x2, int_delp)
     implicit none
@@ -47,7 +49,8 @@
   end subroutine deldp
 
   !
-  !
+  ! Returns the del/dx integral of a Dirac delta function and a primitive
+  ! Gaussian function
   !
   subroutine deldx(S, x1, a2, x2, p2, int_delx)
     implicit none
@@ -65,8 +68,8 @@
   end subroutine deldx
 
   !
-  ! Returns the del^2/d^2x matrix element between the nuclear component
-  ! of two trajectories for each componet of 'x' (does not sum over terms)
+  ! Returns the del^2/d^2x integral of a Dirac delta function and a
+  ! primitive Gaussian function
   !
   subroutine deld2x(S, x1, a2, x2, p2, int_del2x)
     implicit none

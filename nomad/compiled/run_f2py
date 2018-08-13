@@ -1,11 +1,9 @@
 #!/bin/sh
+# Compiles the nuclear integral scripts into local shared libraries.
+# This is done automatically using setup.py in the main directory.
 
 rm -f *.so
-f2py3 -c --fcompiler=gfortran -m nuclear_gaussian nuclear_gaussian.f90
-f2py3 -c --fcompiler=gfortran -m nuclear_dirac nuclear_dirac.f90
-f2py3 -c --fcompiler=gfortran -m nuclear_gaussian_ccs nuclear_gaussian_ccs.f90
-f2py3 -c --fcompiler=gfortran -m vibronic_gaussian vibronic_gaussian.f90
-mv nuclear_gaussian.cpython*.so nuclear_gaussian.so
-mv nuclear_dirac.cpython*.so nuclear_dirac.so
-mv nuclear_gaussian_ccs.cpython*.so nuclear_gaussian_ccs.so
-mv vibronic_gaussian.cpython*.so vibronic_gaussian.so
+f2py -c --fcompiler=gfortran -m nuclear_gaussian nuclear_gaussian.f90
+f2py -c --fcompiler=gfortran -m nuclear_dirac nuclear_dirac.f90
+f2py -c --fcompiler=gfortran -m nuclear_gaussian_ccs nuclear_gaussian_ccs.f90
+f2py -c --fcompiler=gfortran -m vibronic_gaussian vibronic_gaussian.f90

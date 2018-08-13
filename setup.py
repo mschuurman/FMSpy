@@ -1,10 +1,9 @@
 """
 Setup script for the nomad package.
 """
-from setuptools import setup
-from setuptools.extension import Extension
 from setuptools import find_packages
-from Cython.Build import cythonize
+from numpy.distutils.core import setup
+from numpy.distutils.core import Extension
 
 
 def readme():
@@ -13,14 +12,16 @@ def readme():
         return f.read()
 
 
-ext_modules=[
-    Extension('nomad.integrals.nuclear_gaussian',
-              sources=['nomad/integrals/nuclear_gaussian.pyx'], libraries=['m']),
-    Extension('nomad.integrals.nuclear_gaussian_ccs',
-              sources=['nomad/integrals/nuclear_gaussian_ccs.pyx'], libraries=['m']),
-    Extension('nomad.integrals.nuclear_dirac',
-              sources=['nomad/integrals/nuclear_dirac.pyx'], libraries=['m'])
-             ]
+ext_modules = [
+    Extension('nomad.compiled.vibronic_gaussian',
+              sources=['nomad/compiled/vibronic_gaussian.f90']),
+    Extension('nomad.compiled.nuclear_gaussian',
+              sources=['nomad/compiled/nuclear_gaussian.f90']),
+    Extension('nomad.compiled.nuclear_gaussian_ccs',
+              sources=['nomad/compiled/nuclear_gaussian_ccs.f90']),
+    Extension('nomad.compiled.nuclear_dirac',
+              sources=['nomad/compiled/nuclear_dirac.f90'])
+               ]
 
 setup(
     name='nomad',
@@ -42,7 +43,6 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Topic :: Scientific/Engineering :: Chemistry'
                  ],
-    install_requires=['numpy>=1.7.0', 'scipy>=0.12.0', 'h5py>=2.5.0',
-                      'mpi4py>=2.0.0'],
-    ext_modules = cythonize(ext_modules)
+    install_requires=['numpy>=1.7.0', 'scipy>=0.12.0', 'h5py>=2.5.0'],
+    ext_modules=ext_modules
       )
