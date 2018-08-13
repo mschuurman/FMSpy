@@ -24,10 +24,10 @@ def v_integral(t1, t2, centroid, nuc_ovrlp=None):
     # matrix element -- simply return potential energy of trajectory
     if t1.label == t2.label:
         # Adiabatic energy
-        v = t1.energy(t1.state)
+        v = t1.energy(t1.state())
         # DBOC
         if glbl.iface_params['coupling_order'] == 3:
-            v += t1.scalar_coup(t1.state, t2.state)
+            v += t1.scalar_coup(t1.state(), t2.state())
         return v
 
     if nuc_ovrlp is None:
@@ -35,25 +35,25 @@ def v_integral(t1, t2, centroid, nuc_ovrlp=None):
 
     # off-diagonal matrix element, between trajectories on the same
     # state (this also requires the centroid be present)
-    elif t1.state == t2.state:
+    elif t1.state() == t2.state():
         # Adiabatic energy
-        v = centroid.energy(t1.state) * nuc_ovrlp
+        v = centroid.energy(t1.state()) * nuc_ovrlp
         # DBOC
         if glbl.iface_params['coupling_order'] == 3:
-            v += centroid.scalar_coup(t1.state, t2.state) * nuc_ovrlp
+            v += centroid.scalar_coup(t1.state(), t2.state()) * nuc_ovrlp
         return v
 
     # [necessarily] off-diagonal matrix element between trajectories
     # on different electronic states
-    elif t1.state != t2.state:
+    elif t1.state() != t2.state():
         # Derivative coupling
-        fij = centroid.derivative(t1.state, t2.state)
+        fij = centroid.derivative(t1.state(), t2.state())
         v = 2.*np.vdot(fij, t1.kecoef *
                        nuclear.deldx(nuc_ovrlp,t1.widths(),t1.x(),t1.p(),
                                                t2.widths(),t2.x(),t2.p()))
         # Scalar coupling
         if glbl.iface_params['coupling_order'] > 1:
-            v += centroid.scalar_coup(t1.state, t2.state) * nuc_ovrlp
+            v += centroid.scalar_coup(t1.state(), t2.state()) * nuc_ovrlp
         return v
 
     else:

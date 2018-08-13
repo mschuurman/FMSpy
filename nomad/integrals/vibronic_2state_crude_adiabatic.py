@@ -236,7 +236,7 @@ def phi(traj):
     angle   = theta(traj)
     phi_mat = rot_mat(angle)
 
-    return phi_mat[:,traj.state]
+    return phi_mat[:,traj.state()]
 
 
 def dphi(traj):
@@ -250,6 +250,6 @@ def dphi(traj):
     dangle   = dtheta(traj)
     dphi_mat = drot_mat(angle)
 
-    dphi_dq = np.array([dphi_mat[i,traj.state]*dangle for i in range(traj.nstates)])
+    dphi_dq = np.array([dphi_mat[i,traj.state()]*dangle for i in range(traj.nstates)])
 
     return dphi_dq

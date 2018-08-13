@@ -13,7 +13,7 @@ basis = 'gaussian'
 
 def elec_overlap(t1, t2):
     """ Returns < Psi | Psi' >, the nuclear overlap integral of two trajectories"""
-    if t1.state == t2.state:
+    if t1.state() == t2.state():
         return 1.
     else:
         return 0.
@@ -46,7 +46,7 @@ def s_integral(t1, t2, nuc_ovrlp=None):
 
 def t_integral(t1, t2, nuc_ovrlp=None):
     """Returns kinetic energy integral over trajectories."""
-    if t1.state != t2.state:
+    if t1.state() != t2.state():
         return 0j
 
     else:
@@ -61,7 +61,7 @@ def t_integral(t1, t2, nuc_ovrlp=None):
 
 def sdot_integral(t1, t2, nuc_ovrlp=None):
     """Returns the matrix element <Psi_1 | d/dt | Psi_2>."""
-    if t1.state != t2.state:
+    if t1.state() != t2.state():
         return 0j
 
     else:

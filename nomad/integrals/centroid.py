@@ -43,7 +43,7 @@ class Centroid:
             idj          = min(traj_i.label, traj_j.label)
             self.parents = np.array([idj, idi], dtype=int)
             self.nstates = max(traj_i.nstates,traj_j.nstates)
-            self.states  = [traj_i.state, traj_j.state]
+            self.states  = [traj_i.state(), traj_j.state()]
             self.dim     = max(traj_i.dim, traj_j.dim)
             self.label     = -((idi * (idi - 1) // 2) + idj + 1)
             # now update the position in phase space of the centroid
@@ -197,10 +197,6 @@ class Centroid:
 
     def force(self):
         """Returns the gradient of the centroid state."""
-        if not same_state():
+        if self.states[0] != self.states[1]:
             return np.zeros(self.dim)
         return -self.derivative(self.states[0], self.states[1])
-
-    def same_state(self):
-        """Determines if both trajectories are on the same state."""
-        return self.states[0] == self.states[1]

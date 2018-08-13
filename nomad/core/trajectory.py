@@ -9,7 +9,7 @@ import nomad.math.constants as constants
 
 class Trajectory:
     """Class constructor for the Trajectory object."""
-    def __init__(self, nstates, dim, width=None, mass=None,
+    def __init__(self, nstates, dim, widths=None, masses=None,
                  label=0, parent=0, kecoef=None):
         # total number of states
         self.nstates = int(nstates)
@@ -17,17 +17,17 @@ class Trajectory:
         self.dim     = int(dim)
         # widths of gaussians for each dimension
         if width is None:
-            self.width = np.zeros(dim)
+            self.widths = np.zeros(dim)
         else:
-            self.width = np.asarray(width)
+            self.widths = np.asarray(width)
         # masses associated with each dimension
         if mass is None:
-            self.mass = np.zeros(dim)
+            self.masses = np.zeros(dim)
         else:
-            self.mass = np.array(mass)
+            self.masses = np.array(masses)
        # the prefactor on the kinetic energy term: default to 1/2M
-        if len(np.nonzero(self.mass)) == len(self.mass) and kecoef is None:
-            self.kecoef = 0.5 / self.mass
+        if len(np.nonzero(self.masses)) == len(self.masses) and kecoef is None:
+            self.kecoef = 0.5 / self.masses
         else:
             self.kecoef = kecoef
 
@@ -40,8 +40,8 @@ class Trajectory:
         self.pos        = np.zeros(self.dim)
         # current momentum of the trajectory
         self.mom        = np.zeros(self.dim)
-        # state trajectory exists on
-        self.state      = 0
+        # the electronic state weights
+        self.weights    = np.zeros(self.weights)
         # whether the trajectory is alive (i.e. contributes to the wavefunction)
         self.alive      = True
         # whether the trajectory is active (i.e. is being propagated)
@@ -50,7 +50,7 @@ class Trajectory:
         self.amplitude  = 0j
         # phase of the trajectory
         self.gamma      = 0.
-        # time from which the death watch begini as
+        # time from which the death watch begin as
         self.deadtime   = -1.
         # time of last spawn
         self.last_spawn = np.zeros(self.nstates)
@@ -62,13 +62,13 @@ class Trajectory:
     @timings.timed
     def copy(self):
         """Copys a Trajectory object with new references."""
-        new_traj = Trajectory(self.nstates, self.dim, width=self.width, mass=self.mass,
+        new_traj = Trajectory(self.nstates, self.dim, widths=self.width, masses=self.mass,
                               label=self.label, parent=self.parent, kecoef=self.kecoef)
-        new_traj.state      = copy.copy(self.state)
         new_traj.alive      = copy.copy(self.alive)
         new_traj.amplitude  = copy.copy(self.amplitude)
         new_traj.gamma      = copy.copy(self.gamma)
         new_traj.deadtime   = copy.copy(self.deadtime)
+        new_traj.weights    = copy.deepcopy(self.weights)
         new_traj.pos        = copy.deepcopy(self.pos)
         new_traj.mom        = copy.deepcopy(self.mom)
         new_traj.last_spawn = copy.deepcopy(self.last_spawn)
@@ -103,6 +103,12 @@ class Trajectory:
         """Set the definition of the kinetic eneryg operator"""
         self.kecoef = ke_vec
 
+    def set_state(self, state):
+        """Another function to facilitate single state dynamics: sets the
+           weight of state 'state' to 1., all others to zero"""
+        self.weights = np.zeros(self.nstates)
+        self.weights[state] = 1.
+
     #----------------------------------------------------------------------
     #
     # Functions for setting basic pes information from trajectory
@@ -120,10 +126,14 @@ class Trajectory:
 
     def update_phase(self, phase):
         """Updates the nuclear phase."""
-#        self.gamma = 0.5 * np.dot(self.x(), self.p())
-        self.gamma = phase
-        if abs(self.gamma) > 2*np.pi:
-            self.gamma = self.gamma % 2*np.pi
+        self.gamma = 0.5 * np.dot(self.x(), self.p())
+#        self.gamma = phase
+#        if abs(self.gamma) > 2*np.pi:
+#            self.gamma = self.gamma % 2*np.pi
+
+    def update_weights(self, weights):
+        """Update the electronic state weights"""
+        self.weights = weights
 
     def update_amplitude(self, amplitude):
         """Updates the amplitude of the trajectory."""
@@ -150,6 +160,10 @@ class Trajectory:
         """Returns the phase of the trajectory."""
         return self.gamma
 
+    def weights(self):
+        """Returns the electronic state weights"""
+        return self.weights
+
     def masses(self):
         """Returns a vector containing masses associated with each dimension"""
         return self.mass
@@ -159,12 +173,26 @@ class Trajectory:
         along each degree of freedom."""
         return self.width
 
+    def state(self):
+        """Function to facilitate single state dynamics without resorting
+           to unwieldy code. If trajectory exists on a single electronic state,
+           returns that state index, else, returns an error"""
+        if np.count_nonzero(self.weights) == 1:
+            return(np.nonzero(self.weights))
+        elif np.count_nonzero(self.weights) == 0:
+            sys.exit('NOMAD error: called Trajectory.state() for 
+                      trajectory with no states populated')
+        else:
+            sys.exit('NOMAD error: called Trajectory.state() for 
+                      trajectory on multiple electronic states.')
+
+
     #--------------------------------------------------------------------
     #
     # Functions to update information about the potential energy surface
     #
     #--------------------------------------------------------------------
-    def energy(self, state, geom_chk=True):
+    def energy(self, state=None, geom_chk=True):
         """Returns the potential energies.
 
         Add the energy shift right here. If not current, recompute them.
@@ -174,7 +202,10 @@ class Trajectory:
                   'but pes_geom != trajectory.x(). ID=' + str(self.label)+
                   '\ntraj.x()='+str(self.x())+"\npes_geom="+str(self.pes.get_data('geom')))
         #return self.pes.get_data('potential')[state] + glbl.propagate['pot_shift']
-        return self.pes.get_data('potential')[state]
+        if state is None:
+            return self.pes.get_data('potential')[:]
+        else:
+            return self.pes.get_data('potential')[state]
 
     def derivative(self, state_i, state_j, geom_chk=True):
         """Returns the derivative with ket state = rstate.
@@ -232,7 +263,7 @@ class Trajectory:
     #------------------------------------------------------------------------
     def potential(self):
         """Returns classical potential energy of the trajectory."""
-        return self.energy(self.state)
+        return np.dot(self.weights.conjugate * self.weights, self.energy)
 
     def kinetic(self):
         """Returns classical kinetic energy of the trajectory."""
@@ -246,16 +277,12 @@ class Trajectory:
         """Returns the velocity of the trajectory."""
         return self.p() * (2. * self.kecoef)
 
-    def force(self):
+    def force(self, state):
         """Returns the gradient of the trajectory state."""
-        return -self.derivative(self.state, self.state)
+        return -self.derivative(state, state)
 
     def phase_dot(self):
         """Returns time derivatives of the phase."""
         # d[gamma]/dt = T - V - alpha/(2M)
         return (self.kinetic() - self.potential() -
                 np.dot(self.widths(), self.kecoef) )
-
-    def same_state(self, j_state):
-        """Determines if a given state is the same as the trajectory state."""
-        return self.state == j_state

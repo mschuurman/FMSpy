@@ -19,12 +19,14 @@ def adjust_child(parent, child, scale_dir):
 
     # determine the magnitude of the KE correction
     ke_goal  = e_parent - child.potential()
-    ke_child = child.kinetic()
+ 
     if ke_goal < 0:
         return False
 
     # try to scale the momentum along the scale direction
+    ke_child = child.kinetic()
     scale_vec  = scale_dir
+
     scale_norm = np.linalg.norm(scale_vec)
     if scale_norm > constants.fpzero:
         scale_vec = scale_vec / scale_norm
@@ -37,16 +39,17 @@ def adjust_child(parent, child, scale_dir):
     # scale the momentum along the scale_vec direction
     p_para = np.dot(p_child, scale_vec) * scale_vec
     p_perp = p_child - p_para
-
+ 
     # the kinetic energy is given by:
     # KE = (P . P) * / (2M)
     #    = (x * p_para + p_perp).(x * p_para + p_perp) / (2M)
     #    = x^2 * (p_para.p_para) / 2M + 2.*x*(p_para.p_perp) / 2M + (p_perp.p_perp) / 2M
     #    = x^2 * KE_para_para + x * KE_para_perp + KE_perp_perp
-    inv_mass     = 1. / (2. * child.masses())
-    ke_para_para =     np.dot( p_para, p_para * inv_mass )
-    ke_para_perp = 2.* np.dot( p_para, p_perp * inv_mass )
-    ke_perp_perp =     np.dot( p_perp, p_perp * inv_mass )
+    #inv_mass     = 1. / (2. * child.masses())
+    ke_coef      =     child.kecoef
+    ke_para_para =     np.dot( p_para, p_para * ke_coef )
+    ke_para_perp = 2.* np.dot( p_para, p_perp * ke_coef )
+    ke_perp_perp =     np.dot( p_perp, p_perp * ke_coef )
 
     # scale p_para by x so that KE == ke_goal
     # (ke_para_para)*x^2 + (ke_para_perp)*x + (ke_perp_perp - ke_goal) = 0
@@ -81,7 +84,7 @@ def overlap_with_bundle(traj, bundle):
     for i in range(bundle.n_traj()):
         if bundle.traj[i].alive:
 
-            if traj.state != bundle.traj[i].state:
+            if traj.state() != bundle.traj[i].state():
                 sij = 0j
             else:
                 sij = glbl.master_int.traj_overlap(traj, bundle.traj[i])
@@ -102,7 +105,7 @@ def max_nuc_overlap(bundle, overlap_traj, overlap_state=None):
     max_sij = 0.
     for j in range(bundle.n_traj()):
         if bundle.traj[j].alive and j != overlap_traj:
-            if overlap_state is None or bundle.traj[j].state == overlap_state:
+            if overlap_state is None or bundle.traj[j].state() == overlap_state:
                 max_sij = max(max_sij, abs(glbl.master_int.nuc_overlap(
                                                  bundle.traj[overlap_traj],
                                                  bundle.traj[j])))
@@ -114,7 +117,7 @@ def write_spawn_log(entry_time, spawn_time, exit_time, parent, child):
     """Packages data to print to the spawn log."""
     # add a line entry to the spawn log
     data = [entry_time, spawn_time, exit_time]
-    data.extend([parent.label, parent.state, child.label, child.state])
+    data.extend([parent.label, parent.state(), child.label, child.state()])
     data.extend([parent.kinetic(), child.kinetic(), parent.potential(),
                  child.potential()])
     data.extend([parent.classical(), child.classical()])

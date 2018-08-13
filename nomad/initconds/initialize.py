@@ -90,7 +90,7 @@ def set_initial_state(master):
 
         # set all states to the ground state
         for i in range(master.n_traj()):
-            master.traj[i].state = 0
+            master.traj[i].set_state(0)
             # compute transition dipoles
             evaluate.update_pes_traj(master.traj[i])
 
@@ -109,12 +109,12 @@ def set_initial_state(master):
                               ' to state '+str(np.argmax(tdip)+1)+
                               ' | tr. dipople array='+np.array2string(tdip, \
                               formatter={'float_kind':lambda x: "%.4f" % x})])
-            master.traj[i].state = np.argmax(tdip)+1
+            master.traj[i].set_state(np.argmax(tdip)+1)
 
     # use "init_state" to set the initial state
     elif len(glbl.sampling['init_states']) == master.n_traj():
         for i in range(master.n_traj()):
-            master.traj[i].state = glbl.sampling['init_states'][i]
+            master.traj[i].set_state(glbl.sampling['init_states'][i])
 
     else:
         raise ValueError('Ambiguous initial state assignment.')
@@ -180,10 +180,10 @@ def virtual_basis(master):
     """
     for i in range(master.n_traj()):
         for j in range(glbl.propagate['n_states']):
-            if j != master.traj[i].state:
+            if j != master.traj[i].state():
                 new_traj = master.traj[i].copy()
                 new_traj.amplitude = 0j
-                new_traj.state = j
+                new_traj.set_state(j)
                 master.add_trajectory(new_traj)
 
 
@@ -202,7 +202,7 @@ def make_origin_traj():
 
     origin.update_x(x_vec)
     origin.update_p(p_vec)
-    origin.state = 0
+    origin.set_state(0)
     # if we need pes data to evaluate overlaps, determine that now
     if glbl.master_int.overlap_requires_pes:
         evaluate.update_pes_traj(origin)

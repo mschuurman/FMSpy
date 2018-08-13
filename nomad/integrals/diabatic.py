@@ -24,7 +24,7 @@ def v_integral(t1, t2, nuc_ovrlp=None):
         nuc_ovrlp = nuclear.overlap(t1.phase(),t1.widths(),t1.x(),t1.p(),
                                     t2.phase(),t2.widths(),t2.x(),t2.p())
 
-    states = np.sort(np.array([t1.state, t2.state]))
+    states = np.sort(np.array([t1.state(), t2.state()]))
     v_total = complex(0.,0.)
 
     # roll through terms in the hamiltonian

@@ -19,14 +19,14 @@ basis = 'dirac_delta'
 
 def elec_overlap(t1, t2):
     """ Returns < Psi | Psi' >, the nuclear overlap integral of two trajectories"""
-    if t1.state == t2.state:
+    if t1.state() == t2.state():
         return 1.
     else:
         return 0.
 
 def traj_overlap(traj1, traj2, nuc_only=False):
     """ Returns < Psi | Psi' >, the overlap integral of two trajectories"""
-    if traj1.state != traj2.state and not nuc_only:
+    if traj1.state() != traj2.state() and not nuc_only:
         return 0j
     else:
         return gauss.overlap(traj1.phase(),traj1.widths(),traj1.x(),traj1.p(),
@@ -36,7 +36,7 @@ def traj_overlap(traj1, traj2, nuc_only=False):
 def s_integral(traj1, traj2, nuc_only=False, nuc_ovrlp=None):
     """ Returns < chi | Psi' >, the overlap integral under the pseudospectral
     projection."""
-    if traj1.state != traj2.state and not nuc_only:
+    if traj1.state() != traj2.state() and not nuc_only:
         return 0j
     else:
         if nuc_ovrlp is None:
@@ -54,15 +54,15 @@ def v_integral(traj1, traj2, centroid=None, nuc_ovrlp=None):
 
     # Off-diagonal element between trajectories on the same adiabatic
     # state
-    if  traj1.state == traj2.state:
+    if  traj1.state() == traj2.state():
         # Adiabatic energy
-        return traj1.energy(traj1.state) * nuc_ovrlp
+        return traj1.energy(traj1.state()) * nuc_ovrlp
 
     # off-diagonal matrix elements between trajectories on different
     # elecronic states
-    elif traj1.state != traj2.state:
+    elif traj1.state() != traj2.state():
         # Derivative coupling
-        fij = traj1.derivative(traj2.state)
+        fij = traj1.derivative(traj2.state())
         v = np.dot(fij, 2.*traj1.kecoef*
                           dirac.deldx(nuc_ovrlp,traj1.x(),
                                        traj2.widths(),traj2.x(),traj2.p()))
@@ -74,7 +74,7 @@ def v_integral(traj1, traj2, centroid=None, nuc_ovrlp=None):
 
 def ke_integral(traj1, traj2, nuc_ovrlp=None):
     """ Returns < delta(R-R1) | T | g2 > """
-    if traj1.state != traj2.state:
+    if traj1.state() != traj2.state():
         return 0j
 
     else:
@@ -95,7 +95,7 @@ def sdot_integral(traj1, traj2, nuc_ovrlp=None):
     that these functions do not multiply the result by the overlap
     of traj1 and traj2. This isn't ideal, but will do for now.
     """
-    if traj1.state != traj2.state:
+    if traj1.state() != traj2.state():
         return 0j
     else:
         if nuc_ovrlp is None:

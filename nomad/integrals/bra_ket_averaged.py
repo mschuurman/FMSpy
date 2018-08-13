@@ -32,8 +32,8 @@ def v_integral(t1, t2, nuc_ovrlp=None):
     if glbl.propagate['integral_order'] > 2:
         raise ValueError('Integral_order > 2 not implemented for bra_ket_averaged')
 
-    if t1.state == t2.state:
-        state = t1.state
+    if t1.state() == t2.state():
+        state = t1.state()
         # Adiabatic energy
         vij = t1.energy(state) * Sij
         vji = t2.energy(state) * Sji
@@ -73,8 +73,8 @@ def v_integral(t1, t2, nuc_ovrlp=None):
     # on different electronic states
     else:
         # Derivative coupling
-        fij = t1.derivative(t1.state, t2.state)
-        fji = t2.derivative(t2.state, t1.state)
+        fij = t1.derivative(t1.state(), t2.state())
+        fji = t2.derivative(t2.state(), t1.state())
         vij = 2.*np.vdot(fij, t1.kecoef *
                          nuclear.deldx(Sij,t1.widths(),t1.x(),t1.p(),
                                            t2.widths(),t2.x(),t2.p()))

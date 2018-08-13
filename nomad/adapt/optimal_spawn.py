@@ -48,11 +48,11 @@ def spawn(master, dt):
 
         for st in range(glbl.propagate['n_states']):
             # can only spawn to different electronic states
-            if master.traj[i].state == st:
+            if master.traj[i].state() == st:
                 continue
 
             # compute magnitude of coupling to state j
-            coup = abs(master.traj[i].coupling(master.traj[i].state, st))
+            coup = abs(master.traj[i].coupling(master.traj[i].state(), st))
             coup_hist[i][st,:] = np.roll(coup_hist[i][st,:],1)
             coup_hist[i][st,0] = coup
 
@@ -95,7 +95,7 @@ def spawn(master, dt):
 def spawn_forward(parent, child_state, initial_time, dt):
     """Propagates the parent forward (into the future) until the coupling
     decreases."""
-    parent_state    = parent.state
+    parent_state    = parent.state()
     current_time    = initial_time
     spawn_time      = initial_time
     exit_time       = initial_time
@@ -111,7 +111,7 @@ def spawn_forward(parent, child_state, initial_time, dt):
         coup                = np.roll(coup,1)
         coup[0]             = abs(parent.coupling(parent_state, child_state))
         child_attempt       = parent.copy()
-        child_attempt.state = child_state
+        child_attempt.set_state(child_state)
         adjust_success      = utils.adjust_child(parent, child_attempt,
                                                  parent.derivative(parent_state,
                                                                    child_state))
@@ -190,7 +190,7 @@ def spawn_trajectory(bundle, traj_index, spawn_state, coup_h, current_time):
         return False
 
     # there is insufficient coupling
-    if abs(traj.coupling(traj.state, spawn_state)) < glbl.spawning['spawn_coup_thresh']:
+    if abs(traj.coupling(traj.state(), spawn_state)) < glbl.spawning['spawn_coup_thresh']:
         return False
 
     # if coupling is decreasing
@@ -210,8 +210,8 @@ def in_coupled_regime(bundle):
     """Checks if we are in spawning regime."""
     for i in range(bundle.n_traj()):
         for st in range(glbl.propagate['n_states']):
-            if st != bundle.traj[i].state:
-                if abs(bundle.traj[i].coupling(bundle.traj[i].state, st)) > glbl.spawning['spawn_coup_thresh']:
+            if st != bundle.traj[i].state():
+                if abs(bundle.traj[i].coupling(bundle.traj[i].state(), st)) > glbl.spawning['spawn_coup_thresh']:
                     return True
 
     return False

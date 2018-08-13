@@ -4,8 +4,8 @@ Routines for reading input files and writing log files.
 import os
 import h5py
 import numpy as np
-import nomad.integrals.integral as integral
 import nomad.core.glbl as glbl
+import nomad.integrals.integral as integral
 import nomad.core.wavefunction as wavefunction
 import nomad.core.trajectory as trajectory
 import nomad.core.surface as surface
@@ -312,11 +312,11 @@ def create(file_name, wfn):
 
     chkpt.create_group('wavefunction')
     chkpt['wavefunction'].attrs['current_row'] = -1
-    chkpt['wavefunction'].attrs['n_rows']      = -1
+    chkpt['wavefunction'].attrs['n_rows']      = 0 
 
     chkpt.create_group('integral')
     chkpt['integral'].attrs['current_row']     = -1
-    chkpt['integral'].attrs['n_rows']          = -1
+    chkpt['integral'].attrs['n_rows']          = 0
 
     traj0 = wfn.traj[0]
     chkpt.create_group('simulation')
@@ -338,9 +338,10 @@ def write_wavefunction(chkpt, wfn, time):
     resize   = False
 
     # update the current row index (same for all data sets)
-    current_row = chkpt['wavefunction'].attrs['current_row'] + 1
+    chkpt['wavefunction'].attrs['current_row'] += 1
+    current_row = chkpt['wavefunction'].attrs['current_row']
 
-    if current_row > chkpt['wavefunction'].attrs['n_rows']:
+    if current_row == chkpt['wavefunction'].attrs['n_rows']:
         resize = True
         chkpt['wavefunction'].attrs['n_rows'] += n_blk
     n_rows = chkpt['wavefunction'].attrs['n_rows']
@@ -368,8 +369,6 @@ def write_wavefunction(chkpt, wfn, time):
     for i in range(n_traj):
         write_trajectory(chkpt, wfn.traj[i], time)
 
-    chkpt['wavefunction'].attrs['current_row'] = current_row
-
 
 def write_integral(chkpt, integral, time):
     """Documentation to come"""
@@ -378,9 +377,10 @@ def write_integral(chkpt, integral, time):
     resize   = False
 
     # update the current row index (same for all data sets)
-    current_row = chkpt['integral'].attrs['current_row'] + 1
+    chkpt['integral'].attrs['current_row'] += 1
+    current_row = chkpt['integral'].attrs['current_row']
 
-    if current_row > chkpt['integral'].attrs['n_rows']:
+    if current_row == chkpt['integral'].attrs['n_rows']:
         resize   = True
         chkpt['integral'].attrs['n_rows'] += n_blk
     n_rows = chkpt['integral'].attrs['n_rows']
@@ -411,8 +411,6 @@ def write_integral(chkpt, integral, time):
                  if integral.centroid[i][j] is not None:
                      write_centroid(chkpt, integral.centroid[i][j], time)
 
-    chkpt['integral'].attrs['current_row'] = current_row
-
 
 def write_trajectory(chkpt, traj, time):
     """Documentation to come"""
@@ -431,14 +429,15 @@ def write_trajectory(chkpt, traj, time):
         chkpt[t_grp].attrs['current_row'] += 1
         current_row = chkpt[t_grp].attrs['current_row']
 
-        if (current_row > chkpt[t_grp].attrs['n_rows']):
+        if (current_row == chkpt[t_grp].attrs['n_rows']):
             resize = True
             chkpt[t_grp].attrs['n_rows'] += n_blk
+        n_rows = chkpt[t_grp].attrs['n_rows']
 
         for data_label in t_data.keys():
             dset = t_grp+'/'+data_label
             if resize:
-                d_shape  = (n_blk,) + t_data[data_label].shape
+                d_shape  = (n_rows,) + t_data[data_label].shape
                 chkpt[dset].resize(d_shape)
 
             chkpt[dset][current_row] = t_data[data_label]
@@ -448,14 +447,15 @@ def write_trajectory(chkpt, traj, time):
     else:
 
         chkpt.create_group(t_grp)
-        current_row                       = 0
-        chkpt[t_grp].attrs['current_row'] = current_row
+        chkpt[t_grp].attrs['current_row'] = 0 
         chkpt[t_grp].attrs['n_rows']      = n_blk
+        n_rows                            = chkpt[t_grp].attrs['n_rows']
+        current_row                       = chkpt[t_grp].attrs['current_row'] 
 
         # store surface information from trajectory
         for data_label in t_data.keys():
             dset = t_grp+'/'+data_label
-            d_shape   = (n_blk,) + t_data[data_label].shape
+            d_shape   = (n_rows,) + t_data[data_label].shape
             max_shape = (None,)   + t_data[data_label].shape
             d_type    = t_data[data_label].dtype
             if d_type.type is np.unicode_:
@@ -481,14 +481,15 @@ def write_centroid(chkpt, cent, time):
         chkpt[c_grp].attrs['current_row'] += 1
         current_row = chkpt[c_grp].attrs['current_row']
 
-        if current_row > chkpt[c_grp].attrs['n_rows']:
+        if current_row == chkpt[c_grp].attrs['n_rows']:
             resize = True
             chkpt[c_grp].attrs['n_rows'] += n_blk
+        n_rows = chkpt[c_grp].attrs['n_rows']
 
         for data_label in c_data.keys():
             dset = c_grp+'/'+data_label
             if resize:
-                d_shape  = (n_blk,) + c_data[data_label].shape
+                d_shape  = (n_rows,) + c_data[data_label].shape
                 chkpt[dset].resize(d_shape)
 
             chkpt[dset][current_row] = c_data[data_label]
@@ -498,14 +499,15 @@ def write_centroid(chkpt, cent, time):
     else:
 
         chkpt.create_group(c_grp)
-        current_row                       = 0
-        chkpt[c_grp].attrs['current_row'] = current_row
+        chkpt[c_grp].attrs['current_row'] = 0 
         chkpt[c_grp].attrs['n_rows']      = n_blk
+        current_row                       = chkpt[c_grp].attrs['current_row']
+        n_rows                            = chkpt[c_grp].attrs['n_rows']
 
         # store surface information from trajectory
         for data_label in c_data.keys():
             dset = c_grp+'/'+data_label
-            d_shape   = (n_blk,) + c_data[data_label].shape
+            d_shape   = (n_rows,) + c_data[data_label].shape
             max_shape = (None,)   + c_data[data_label].shape
             d_type    = c_data[data_label].dtype
             if d_type.type is np.unicode_:
@@ -600,7 +602,7 @@ def read_trajectory(chkpt, new_traj, t_grp, t_row):
     # currently, momentum has to be read in separately
     momt    = chkpt[t_grp+'/momentum'][t_row]
 
-    new_traj.state  = int(state)
+    new_traj.set_state(int(state))
     new_traj.parent = int(parent)
     new_traj.update_amplitude(amp_real+1.j*amp_imag)
     new_traj.last_spawn = data_row[5:]
@@ -687,7 +689,7 @@ def package_trajectory(traj, time):
     # uniquely tag everything
     traj_data = dict(
         time     = np.array([time],dtype='float'),
-        glbl     = np.concatenate((np.array([traj.parent, traj.state, traj.gamma,
+        glbl     = np.concatenate((np.array([traj.parent, traj.state(), traj.gamma,
                                  traj.amplitude.real, traj.amplitude.imag]),
                                  traj.last_spawn)),
         momentum = traj.p()
@@ -717,5 +719,6 @@ def package_centroid(cent, time):
 
 def default_blk_size(time):
     """Documentation to come"""
-    return int(2.1 * (glbl.propagate['simulation_time']-time) /
-                      glbl.propagate['default_time_step'])
+    return 10
+#    return int(2.1 * (glbl.propagate['simulation_time']-time) /
+#                      glbl.propagate['default_time_step'])

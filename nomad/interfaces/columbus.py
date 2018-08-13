@@ -162,7 +162,7 @@ def evaluate_trajectory(traj, t=None):
     global n_cart
 
     label   = traj.label
-    state   = traj.state
+    state   = traj.state()
     nstates = traj.nstates
 
     if label < 0:
@@ -286,7 +286,7 @@ def evaluate_centroid(Cent, t=None):
 def evaluate_coupling(traj):
     """evaluate coupling between electronic states"""
     nstates = traj.nstates
-    state   = traj.state
+    state   = traj.state()
 
     # effective coupling is the nad projected onto velocity
     coup = np.zeros((nstates, nstates),dtype='float')
@@ -371,7 +371,7 @@ def run_col_mcscf(traj, t):
     label = traj.label
 
     if type(traj) is trajectory.Trajectory:
-        state = traj.state
+        state = traj.state()
     else:
         state = min(traj.states)
 
@@ -465,7 +465,7 @@ def run_col_mrci(traj, ci_restart, t):
         int_trans = True
         # compute densities between all states and trajectory state
         tran_den = []
-        init_states = [0, traj.state]
+        init_states = [0, traj.state()]
         for i in init_states:
             for j in range(traj.nstates):
                 if i != j and not (j in init_states and j < i):
@@ -684,7 +684,7 @@ def run_col_gradient(traj, t):
 
     os.chdir(work_path)
     shutil.copy(input_path + '/cigrdin', 'cigrdin')
-    tstate = traj.state + 1
+    tstate = traj.state() + 1
 
     if mrci_lvl > 0:
         link_force('cid1fl.drt1.state' + str(tstate), 'cid1fl')
@@ -725,7 +725,7 @@ def run_col_gradient(traj, t):
     gradient = np.array([item.replace('D', 'e') for row in grad
                              for item in row], dtype=float)
 
-    shutil.move('cartgrd', 'cartgrd.s'+str(traj.state)+'.'+str(traj.label))
+    shutil.move('cartgrd', 'cartgrd.s'+str(traj.state())+'.'+str(traj.label))
 
     # grab cigrdls output
     append_log(traj.label,'cigrd', t)
@@ -739,7 +739,7 @@ def run_col_coupling(traj, ci_ener, t):
     global input_path, work_path
 
     if type(traj) is trajectory.Trajectory:
-        t_state    = traj.state
+        t_state    = traj.state()
         c_states   = range(traj.nstates)
         delta_e_max = coup_de_thresh
     elif type(traj) is centroid.Centroid:
@@ -973,7 +973,7 @@ def get_adiabatic_phase(traj, new_coup):
 
     label = traj.label
     if type(traj) is trajectory.Trajectory:
-        state = traj.state
+        state = traj.state()
     else:
         state = min(traj.states)
 
