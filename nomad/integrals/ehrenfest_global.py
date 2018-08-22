@@ -36,7 +36,7 @@ def s_integral(t1, t2, nuc_ovrlp=None):
 		nuc_ovrlp = nuc_overlap(t1, t2)
 	
 	
-	return 	t1.weights() * t2.weights() * elec_overlap(t1, t2) * nuc_ovrlp
+	return 	np.dot(t1.weights(), t2.weights()) * elec_overlap(t1, t2) * nuc_ovrlp
  
 def t_integral():
 	"""Returns the kinetic energy integral over EBF trajectories."""
